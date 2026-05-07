@@ -7,20 +7,39 @@ import { useState } from "react";
 
 export default function App() {
   //definicion de una variable de estado en ReactN
-const [inputText, setInputText] = useState("maria");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState ("");
+const [name, setName] = useState("");
+const [phoneNumber, setPhoneNumber] = useState("");
 
   return (
     <View style={styles.container}>
       <Text>Open up App.tsx to start working on your app!</Text>
       <StatusBar style="auto" />
       
+       <CustomInput 
+        placeholder={"Ingresa tu nombre"} 
+        value={name} 
+        onChange={setName}
+        />
+          <CustomInput 
+          type={"number"}
+        placeholder={"Ingresa tu numero de telefono"} 
+        value={phoneNumber} 
+        onChange={setPhoneNumber}
+        />
       <CustomInput 
-      type={"number"} 
-      placeholder={""} 
-      value={inputText} 
-      onChange={setInputText}
-      />
- 
+        type={"email"} 
+        placeholder={"micorreo@gmail.com"} 
+        value={email} 
+        onChange={setEmail}
+        />
+      <CustomInput 
+        type={"password"} 
+        placeholder={"Ingresa tu contraseña"} 
+        value={password} 
+        onChange={setPassword}
+        />
       <CustomButton
         title={"App"}
         onPress={() => {

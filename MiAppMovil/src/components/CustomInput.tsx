@@ -1,34 +1,47 @@
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { TextInput, TouchableOpacity, View, Text, StyleSheet } from "react-native";
+import { TextInput, TouchableOpacity, View, Text, StyleSheet, KeyboardTypeOptions } from "react-native";
 
 type Props = {
-    type: "text" | "email" | "password" | "number";
+    type?: "text" | "email" | "password" | "number";
     placeholder: string;
     value: string;
     onChange: (text: string) => void;
 }
 
-export default function CustomInput ({type, placeholder, value, onChange}: Props){
-    const [isSecureText, setIsSecureText] = useState(true);
+export default function CustomInput ({type = "text", placeholder, value, onChange}: Props){
+    const [isSecureText, setIsSecureText] = useState(type === 'password');
+    const isPasswordField = type === 'password'; 
 
-    const icon : typeof Ionicons["name"] | undefined = 
-        type === "email" ? 'at' : 
-            type === "password" ? 'lock-closed' : undefined
+    const icon : typeof MaterialIcons["name"] | undefined = 
+        type === "email" ? 'alternate-email' : 
+            type === "password" ? 'lock' : undefined
+    const keyboardType: KeyboardTypeOptions = 
+        type === "email"? 'email-address' :
+            type === "number" ? 'phone-pad':
+                'default';
+    
+    const getError = () => {
+        if (type === 'email' && !value.includes('@')) return 'Correo invalido';
+        if (type === 'password' && value.length < 4) return 'La contraseña es muy debil';
+        if (type === 'number' && (value.length != 8 || value.includes('-'))) return 'Numero de telefono invalido';
+    }
+    const error = getError();
 
     return(
         //wrapper
          <View style={styles.wrapper}>
-            <View style={styles.inputContainer}>
-                <Ionicons name={icon as any} size={20} color ="#00000"/>
+            <View style={[styles.inputContainer, error && styles.inputError]}>
+                <MaterialIcons name={icon as any} size={22} color ="#000000"/>
                 <TextInput 
                     placeholder={placeholder}
                     value={value}
                     onChangeText={onChange}
                     style={styles.input}
                     secureTextEntry={isSecureText}
+                    keyboardType={keyboardType}
                 />
-                <TouchableOpacity
+              { isPasswordField && <TouchableOpacity
                 onPress={
                     ()=>{
                         setIsSecureText(!isSecureText)
@@ -36,9 +49,12 @@ export default function CustomInput ({type, placeholder, value, onChange}: Props
                 }
                 >
                     <Ionicons name={isSecureText ? "eye" : "eye-off"} size={22} />
-                </TouchableOpacity>
+                </TouchableOpacity>}
             </View>
-            <Text>Probando Wrapper</Text>
+            {
+            error && 
+                <Text style ={styles.inputError} > {error} </Text>
+            }
          </View>
 
     );
@@ -68,5 +84,9 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 10,
       
+    },
+    inputError :{
+        color:'red',
+        borderColor: 'red',
     }
 })
