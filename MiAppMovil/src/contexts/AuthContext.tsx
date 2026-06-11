@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 
 //1. Tipado de objeto principal del contexto
 type User = {
+    token: string;
     email: string;
     pwd?: string;
 } | null;
@@ -35,15 +36,28 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
     //inicializacion de estado con objeto nulo(vacio)
     const [user, setUser] = useState<User>(null);
 
+    const setUserSession = (data:any) => {
+        const session = data.session; 
+
+        if(session && session.user) {
+            setUser({token: session.access_token,
+            email: session.user.email,
+            });
+        }else {
+            setUser(null);
+        }
+    }
+
     const login = async (email: string, password:string) => {
         const {data, error} = await supabase.auth.signInWithPassword({
             email,
             password
         }); 
+        
         if (error){
             Alert.alert("Error al iniciar sesion", error.message);
         }
-        console.log(data);
+        setUserSession(data);        
     }
 
     const logout = async () => {
@@ -51,6 +65,10 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
        setUser(null);
     };
 
+    const register = (email:string, password:string) => {
+
+    };
+    
     return (
         <AuthContext.Provider value={{user, login, logout}}>
             {children}
