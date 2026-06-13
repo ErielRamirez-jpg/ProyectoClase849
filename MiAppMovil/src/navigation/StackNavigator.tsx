@@ -16,11 +16,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function StackNavigator() {
   const { colors } = useTheme();
-  
   return (
     <Stack.Navigator
       initialRouteName="Login"
-      screenOptions={{ 
+      screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: colors.headerBackground },
         headerTintColor: colors.headerText
@@ -31,19 +30,16 @@ export default function StackNavigator() {
         component={LoginScreen}
         options={{ title: "Skincare Tracker" }}
       />
-      
       <Stack.Screen
         name="Register"
         component={RegisterScreen}
         options={{ title: "Crear Cuenta" }}
       />
-
       <Stack.Screen
         name="MainTabs"
         component={TabNavigator}
         options={{ headerShown: false }}
       />
-      
       <Stack.Screen
         name="ProductDetail"
         component={ProductDetailScreen}
