@@ -1,42 +1,56 @@
-import CustomInput from "../components/CustomInput";
-import CustomButton from "../components/CustomButton";
-import ScreenWrapper from "../components/ScreenWrapper";
-import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { i18n } from "../contexts/LanguageContext";
+// src/screens/LoginScreen.tsx
+import React from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import ScreenWrapper from '../components/ScreenWrapper';
+import CustomButton from '../components/CustomButton';
+import { supabase } from '../services/supabaseClient';
 
-export default function LoginScreen({ navigation }: any) {
-  const [email, setEmail] = useState("mjsalinas@unitec.edu");
-  const [password, setPassword] = useState("");
+const LoginScreen = ({ navigation }: any) => {
 
-  const { login } = useAuth();
+  const handleGoogleLogin = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+    });
 
-  const handleLogin = () => {
-    try {
-      login(email, password);
-      navigation.navigate("MainTabs");
-    } catch (error) {
-      console.log(error);
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
     }
+
+    // Supabase abre automáticamente el navegador para autenticarse con Google
+    console.log('Redirigiendo a Google...', data);
   };
 
   return (
     <ScreenWrapper>
-      <CustomInput
-        type="email"
-        placeholder="Ingresa tu correo"
-        value={email}
-        onChange={setEmail}
-      />
+      <View style={styles.container}>
+        <Text style={styles.title}>Iniciar sesión</Text>
 
-      <CustomInput
-        type="password"
-        placeholder="Ingresa tu contraseña"
-        value={password}
-        onChange={setPassword}
-      />
+        {/* Botón SSO Google */}
+        <CustomButton
+          title="Continuar con Google"
+          variant="secondary"
+          onPress={handleGoogleLogin}
+        />
 
-      <CustomButton title={i18n.t("signIn")} onPress={handleLogin} />
+      </View>
     </ScreenWrapper>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    gap: 16,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+});
+
+export default LoginScreen;

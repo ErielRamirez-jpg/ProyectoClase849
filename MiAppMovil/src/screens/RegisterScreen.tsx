@@ -1,71 +1,110 @@
-import { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import CustomInput from "../components/CustomInput";
-import CustomButton from "../components/CustomButton";
+import React, { useState } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import ScreenWrapper from '../components/ScreenWrapper';
+import CustomInput from '../components/CustomInput';
+import CustomButton from '../components/CustomButton';
+import { supabase } from '../services/supabaseClient'; // 👈 importar el cliente
 
-export default function RegisterScreen () {
-     //definicion de una variable de estado en ReactN
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState ("");
-const [name, setName] = useState("");
-const [phoneNumber, setPhoneNumber] = useState("");
+const RegisterScreen = ({ navigation }: any) => {
+  const [name, setName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // 👈 para deshabilitar el botón mientras carga
+
+  const handleRegister = async () => {
+    // Validación básica (Actividad 2)
+    if (!name.trim() || !phoneNumber.trim() || !email.trim() || !password.trim()) {
+      Alert.alert('Campos incompletos', 'Por favor completa todos los campos.');
+      return;
+    }
+
+    setLoading(true);
+
+    // Llamada a Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password.trim(),
+    });
+
+    setLoading(false);
+
+    // Manejo de error
+    if (error) {
+      Alert.alert('Error al registrarse', error.message);
+      return;
+    }
+
+    // Registro exitoso
+    if (data.user) {
+      Alert.alert(
+        '¡Registro exitoso!',
+        'Tu cuenta fue creada correctamente.',
+        [
+          {
+            text: 'Iniciar sesión',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]
+      );
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      
-       <CustomInput 
-        placeholder={"Ingresa tu nombre"} 
-        value={name} 
-        onChange={setName}
+    <ScreenWrapper>
+      <View style={styles.container}>
+        <Text style={styles.title}>Crear cuenta</Text>
+
+        <CustomInput
+          placeholder="Nombre completo"
+          value={name}
+          onChange={setName}
         />
-          <CustomInput 
-          type={"number"}
-        placeholder={"Ingresa tu numero de telefono"} 
-        value={phoneNumber} 
-        onChange={setPhoneNumber}
+
+        <CustomInput
+          placeholder="Número de teléfono"
+          value={phoneNumber}
+          onChange={setPhoneNumber}
+          type="number"
         />
-      <CustomInput 
-        type={"email"} 
-        placeholder={"micorreo@gmail.com"} 
-        value={email} 
-        onChange={setEmail}
+
+        <CustomInput
+          placeholder="Correo electrónico"
+          value={email}
+          onChange={setEmail}
+          type="email"
         />
-      <CustomInput 
-        type={"password"} 
-        placeholder={"Ingresa tu contraseña"} 
-        value={password} 
-        onChange={setPassword}
+
+        <CustomInput
+          placeholder="Contraseña"
+          value={password}
+          onChange={setPassword}
+          type="password"
         />
-      <CustomButton
-        title={"App"}
-        onPress={() => {
-          console.log("Press desde boton App");
-        }}
-      />
-       <CustomButton
-        title={"Secondary Button"}
-        onPress={() => {
-          console.log("Press desde boton Secundario");
-        }}
-        variant="secondary"
-      />
-       <CustomButton
-        title={"Tertiary Button"}
-        onPress={() => {
-          console.log("Press desde boton Secundario");
-        }}
-        variant="tertiary"
-      />
-    </View>
+
+        <CustomButton
+          title={loading ? 'Registrando...' : 'Registrarse'}
+          variant="primary"
+          onPress={handleRegister}
+        />
+      </View>
+    </ScreenWrapper>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    
+    padding: 24,
+    gap: 16,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
   },
 });
+
+export default RegisterScreen;
