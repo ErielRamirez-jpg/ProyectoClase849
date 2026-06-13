@@ -4,7 +4,7 @@ import ScreenWrapper from '../components/ScreenWrapper';
 import CustomInput from '../components/CustomInput';
 import CustomButton from '../components/CustomButton';
 import { supabase } from '../services/supabaseClient';
-import { useAuth } from '../contexts/AuthContext'; // <-- Importamos tu hook de autenticación
+import { useAuth } from '../contexts/AuthContext';
 
 export default function RegisterScreen({ navigation }: any) {
 
@@ -13,7 +13,7 @@ export default function RegisterScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Traemos la función global de Google desde tu AuthContext
+
   const { loginWithGoogle } = useAuth();
 
   const handleRegister = async () => {
@@ -50,7 +50,6 @@ export default function RegisterScreen({ navigation }: any) {
     }
   };
 
-  // Modificamos la función para usar tu flujo centralizado
   const handleGoogleRegister = async () => {
     try {
       await loginWithGoogle();
@@ -62,44 +61,25 @@ export default function RegisterScreen({ navigation }: any) {
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        <CustomInput
-          placeholder="Nombre completo"
-          value={name}
-          onChange={setName}
-        />
+        <CustomInput placeholder="Nombre completo" value={name} onChange={setName} />
+        <CustomInput placeholder="Número de teléfono" value={phoneNumber} onChange={setPhoneNumber} type="number" />
+        <CustomInput placeholder="Correo electrónico" value={email} onChange={setEmail} type="email" />
+        <CustomInput placeholder="Contraseña" value={password} onChange={setPassword} type="password" />
 
-        <CustomInput
-          placeholder="Número de teléfono"
-          value={phoneNumber}
-          onChange={setPhoneNumber}
-          type="number" 
-        />
+        {/* Agrupamos los botones aquí */}
+        <View style={styles.buttonRow}>
+          <CustomButton
+            title="Registrarse"
+            variant="primary"
+            onPress={handleRegister}
+          />
 
-        <CustomInput
-          placeholder="Correo electrónico"
-          value={email}
-          onChange={setEmail}
-          type="email"
-        />
-
-        <CustomInput
-          placeholder="Contraseña"
-          value={password}
-          onChange={setPassword}
-          type="password"
-        />
-
-        <CustomButton
-          title="Registrarse"
-          variant="primary"
-          onPress={handleRegister}
-        />
-
-        <CustomButton
-          title="Continuar con Google"
-          variant="secondary" // Opción válida ("primary" | "secondary" | "tertiary")
-          onPress={handleGoogleRegister}
-        />
+          <CustomButton
+            title="Google"
+            variant="secondary" 
+            onPress={handleGoogleRegister}
+          />
+        </View>
       </View>
     </ScreenWrapper>
   );
@@ -109,5 +89,11 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     gap: 15,
+  },
+  // Agrega este estilo
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
 });

@@ -1,3 +1,4 @@
+import { View, StyleSheet } from "react-native";
 import CustomInput from "../components/CustomInput";
 import CustomButton from "../components/CustomButton";
 import ScreenWrapper from "../components/ScreenWrapper";
@@ -20,11 +21,9 @@ export default function LoginScreen({ navigation }: any) {
     }
   };
 
-  // Función que dispara el flujo web de Google
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-
     } catch (error) {
       console.log("Error al presionar el botón de Google:", error);
     }
@@ -46,20 +45,31 @@ export default function LoginScreen({ navigation }: any) {
         onChange={setPassword}
       />
 
+      {/* Botón principal ocupando el ancho completo arriba */}
       <CustomButton title={i18n.t("signIn")} onPress={handleLogin} />
 
-
-      <CustomButton 
-        title="Continuar con Google" 
-        variant="tertiary" 
-        onPress={handleGoogleLogin} 
-      />
-
-      <CustomButton 
-        title="¿No tienes cuenta? Regístrate" 
-        variant="secondary"
-        onPress={() => navigation.navigate("Register")} 
-      />
+      {/* Contenedor para botones lado a lado */}
+      <View style={styles.buttonRow}>
+        <CustomButton 
+          title="Google" 
+          variant="tertiary" 
+          onPress={handleGoogleLogin} 
+        />
+        <CustomButton 
+          title="Regístrate" 
+          variant="secondary"
+          onPress={() => navigation.navigate("Register")} 
+        />
+      </View>
     </ScreenWrapper>
   );
 }
+
+const styles = StyleSheet.create({
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 310, // Ajustado para que los dos botones de 150px quepan con 10px de espacio entre ellos
+    marginTop: 15,
+  },
+});
