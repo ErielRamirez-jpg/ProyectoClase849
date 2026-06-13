@@ -1,8 +1,12 @@
 import { createContext, useContext, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { Alert } from "react-native";
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 
-//1. Tipado de objeto principal del contexto
+// Asegura que el navegador se cierre correctamente tras autenticarse
+WebBrowser.maybeCompleteAuthSession(); 
+
 type User = {
     token: string;
     email: string;
@@ -11,68 +15,90 @@ type User = {
 
 type AuthContextType = {
     user: User | null; 
-    login: (email: string, password: string)=>  Promise<void>;
-    logout: ()=> void;
+    login: (email: string, password: string) => Promise<void>;
+    logout: () => void;
+    loginWithGoogle: () => Promise<void>;
 }
 
-
-//2. Creacion del contexto
 const AuthContext = createContext<AuthContextType | null>(null);
 
-
-//4. exposicion de contexto en forma de hook personalizdo 
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) throw new Error ("useAuth debe usarse dentro de AuthProvider");
     return context;
 }
 
-
-//3. Crear el Provider: medio por el cual se maneja el estado global
 export const AuthProvider = ({children}: {children: React.ReactNode}) => {
-    //inicializacion de estado con objeto y valores
-    // const [user, setUser] = useState<User>({email:'mjsalinas@unitec.edu});
-
-    //inicializacion de estado con objeto nulo(vacio)
     const [user, setUser] = useState<User>(null);
 
-    const setUserSession = (data:any) => {
+    const setUserSession = (data: any) => {
         const session = data.session; 
-
         if(session && session.user) {
-            setUser({token: session.access_token,
-            email: session.user.email,
+            setUser({
+                token: session.access_token,
+                email: session.user.email,
             });
-            //to-do guardar token en el almacenamiento del dispositivo
-            
-        }else {
+        } else {
             setUser(null);
         }
     }
 
-    const login = async (email: string, password:string) => {
+    const login = async (email: string, password: string) => {
         const {data, error} = await supabase.auth.signInWithPassword({
             email,
             password
         }); 
         
         if (error){
-            Alert.alert("Error al iniciar sesion", error.message);
+            Alert.alert("Error al iniciar sesión", error.message);
         }
         setUserSession(data);        
     }
+
+    const loginWithGoogle = async () => {
+    try {
+        // 1. Definimos explícitamente el esquema de tu app
+        const scheme = 'miappmovil';
+        // 2. Creamos la URL de redirección exacta
+        const redirectUrl = 'miappmovil://auth-callback';
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: redirectUrl, // Esto debe ser miappmovil://auth-callback
+                skipBrowserRedirect: true, // Forzamos a que no intente abrir nada más
+            },
+        });
+
+        if (error) {
+            Alert.alert("Error con Google", error.message);
+            return;
+        }
+
+        if (data?.url) {
+            // 3. Abrimos la sesión y le decimos al navegador qué URL escuchar para cerrarse
+            const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+            
+            if (result.type === 'success') {
+                // Si llegamos aquí, el navegador se cerró correctamente
+                const { data: sessionData } = await supabase.auth.getSession();
+                if (sessionData?.session) {
+                    setUserSession(sessionData);
+                }
+            }
+        }
+    } catch (error: any) {
+        console.log("Error en OAuth:", error);
+    }
+};
 
     const logout = async () => {
        await supabase.auth.signOut();
        setUser(null);
     };
-//to-do: implementar registro con supabase
-    const register = (email:string, password:string) => {
-
-    };
     
     return (
-        <AuthContext.Provider value={{user, login, logout}}>
+        <AuthContext.Provider value={{user, login, logout, loginWithGoogle}}>
             {children}
         </AuthContext.Provider>
     );

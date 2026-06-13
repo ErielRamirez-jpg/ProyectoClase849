@@ -9,7 +9,7 @@ export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("mjsalinas@unitec.edu");
   const [password, setPassword] = useState("");
 
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const handleLogin = () => {
     try {
@@ -17,6 +17,16 @@ export default function LoginScreen({ navigation }: any) {
       navigation.navigate("MainTabs");
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  // Función que dispara el flujo web de Google
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+
+    } catch (error) {
+      console.log("Error al presionar el botón de Google:", error);
     }
   };
 
@@ -37,6 +47,19 @@ export default function LoginScreen({ navigation }: any) {
       />
 
       <CustomButton title={i18n.t("signIn")} onPress={handleLogin} />
+
+
+      <CustomButton 
+        title="Continuar con Google" 
+        variant="tertiary" 
+        onPress={handleGoogleLogin} 
+      />
+
+      <CustomButton 
+        title="¿No tienes cuenta? Regístrate" 
+        variant="secondary"
+        onPress={() => navigation.navigate("Register")} 
+      />
     </ScreenWrapper>
   );
 }
